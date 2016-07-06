@@ -16,8 +16,46 @@
 
 #include p16f876a.inc
 list p=16f876A
-    __config _FOSC_XT & _WDT_OFF & _PWRTE_ON & _BOREN_OFF & _LVP_OFF
-    __config _CPD_OFF & _WRT_OFF & _DEBUG_OFF & _CPD_OFF
+    __config _FOSC_XT & _WDT_OFF & _PWRTE_ON & _BOREN_OFF & _LVP_OFF & _CPD_OFF & _WRT_OFF & _DEBUG_OFF & _CPD_OFF
 
+
+    ORG     0
+
+MAIN
+    call    BANK1
+    movlw   B'1111111'
+    movwf	TRISB
+    movwf	PORTB
+    goto    DIE
+
+
+DIE
+    nop
+    goto DIE
+
+
+BANK0
+    bcf     STATUS,RP0
+    bcf     STATUS,RP1
+    return
+
+BANK1
+    bsf     STATUS,RP0
+    bcf     STATUS,RP1
+    return
+
+BANK2
+    bcf     STATUS,RP0
+    bsf     STATUS,RP1
+    return
+
+BANK3
+    bsf     STATUS,RP0
+    bsf     STATUS,RP1
+    return
+
+
+
+    END
 
 ; vim:ft=pic8
