@@ -65,11 +65,31 @@ DELAY_COUNT4 EQU 0x024
 
     ORG     0
 
+INIT
+    ; Init internal oscillator
+    call    BANK15
+    movlw   B'11101101'
+    movwf   OSCCON
+
+    ; Init delay counters
+    movlw   0xFF
+    movwf   DELAY_COUNT1
+    movwf   DELAY_COUNT2
+    movwf   DELAY_COUNT3
+    movwf   DELAY_COUNT4
+
+    ; Init TRISB
+    movlw   B'0000000'
+    movwf   TRISB
+    movwf   PORTB
+
+
+
 MAIN
-    call    BANK1
-    movlw   B'1111111'
-    movwf	TRISB
-    movwf	PORTB
+    call    BANK15
+    comf    PORTB,1
+    call    DELAY
+    goto    MAIN
     goto    DIE
 
 
@@ -79,25 +99,40 @@ DIE
 
 
 BANK0
-    bcf     STATUS,RP0
-    bcf     STATUS,RP1
+    movlb   0x00
     return
-
 BANK1
-    bsf     STATUS,RP0
-    bcf     STATUS,RP1
+    movlb   0x01
     return
-
 BANK2
-    bcf     STATUS,RP0
-    bsf     STATUS,RP1
+    movlb   0x02
     return
-
 BANK3
-    bsf     STATUS,RP0
-    bsf     STATUS,RP1
+    movlb   0x03
+    return
+BANK15
+    movlb   0x0F
     return
 
+
+DELAY
+    dcfsnz  DELAY_COUNT1,1
+    return
+REDUCE_DELAY
+    dcfsnz  DELAY_COUNT2,1
+    goto    DELAY
+    nop
+    goto    REDUCE_DELAY
+; REDUCE_DELAY1
+;     dcfsnz  DELAY_COUNT3,1
+;     goto    REDUCE_DELAY
+;     nop
+;     goto    REDUCE_DELAY1
+; REDUCE_DELAY2
+;     dcfsnz  DELAY_COUNT4,1
+;     goto    REDUCE_DELAY1
+;     nop
+;     goto    REDUCE_DELAY2
 
 
     END
