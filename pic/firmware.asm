@@ -100,20 +100,29 @@ INIT
     movlw   B'00000000'
     movwf   BAUDCON
 
+    ; Init ADC
+    ; Channel 0 (AN0)
+    movlw   B'00000001'
+    movwf   ADCON0
+    movlw   B'00001110'
+    movwf   ADCON1
+    movlw   B'00010100'
+    movwf   ADCON2
+
 
 
 MAIN
     call    BANK15
     movlw   'a'
     movwf   TXREG
-    call    GET_DATA
+    call    GET_UART_DATA
     call    DELAY
     goto    MAIN
     ; goto    DIE
 
-GET_DATA
+GET_UART_DATA
     btfss   PIR1, RCIF
-    goto    GET_DATA
+    goto    GET_UART_DATA
     bcf     PIR1, RCIF
     movlw   'b'
     cpfseq  RCREG
@@ -123,10 +132,12 @@ GET_DATA
     return
 
 
+
+
+
 DIE
     nop
     goto DIE
-
 
 BANK0
     movlb   0x00
@@ -143,7 +154,6 @@ BANK3
 BANK15
     movlb   0x0F
     return
-
 
 DELAY
     dcfsnz  DELAY_COUNT1,1
