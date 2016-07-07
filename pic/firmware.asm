@@ -104,12 +104,23 @@ INIT
 
 MAIN
     call    BANK15
-    comf    PORTB,1
     movlw   'a'
     movwf   TXREG
+    call    GET_DATA
     call    DELAY
     goto    MAIN
-    goto    DIE
+    ; goto    DIE
+
+GET_DATA
+    btfss   PIR1, RCIF
+    goto    GET_DATA
+    bcf     PIR1, RCIF
+    movlw   'b'
+    cpfseq  RCREG
+    return
+    comf    PORTB,1
+    clrf    RCREG
+    return
 
 
 DIE
