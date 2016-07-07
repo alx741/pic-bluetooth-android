@@ -14,9 +14,53 @@
 ; By: Daniel Campoverde Carrión [Alx741]
 ; Assembler: GPASM (should work with Microchip's assembler as well)
 
-#include p16f876a.inc
-list p=16f876A
-    __config _FOSC_XT & _WDT_OFF & _PWRTE_ON & _BOREN_OFF & _LVP_OFF & _CPD_OFF & _WRT_OFF & _DEBUG_OFF & _CPD_OFF
+#include p18f4550.inc
+list p=18f4550
+
+    ; Fuses setting
+    CONFIG PLLDIV = 1
+    CONFIG CPUDIV = OSC1_PLL2
+    CONFIG FOSC = INTOSCIO_EC
+    CONFIG FCMEN = OFF
+    CONFIG IESO = OFF
+    CONFIG PWRT = ON
+    CONFIG BOR = OFF
+    CONFIG WDT = OFF
+    CONFIG PBADEN = OFF
+    CONFIG LPT1OSC = OFF
+    CONFIG MCLRE = ON
+    CONFIG STVREN = OFF
+    CONFIG LVP = OFF
+    CONFIG ICPRT = OFF
+    CONFIG XINST = OFF
+    CONFIG DEBUG = OFF
+    CONFIG CP0 = OFF
+    CONFIG CP1 = OFF
+    CONFIG CP3 = OFF
+    CONFIG CPB = OFF
+    CONFIG CPD = OFF
+    CONFIG WRT0 = OFF
+    CONFIG WRT1 = OFF
+    CONFIG WRT2 = OFF
+    CONFIG WRT3 = OFF
+    CONFIG WRTC = OFF
+    CONFIG WRTB = OFF
+    CONFIG WRTD = OFF
+    CONFIG EBTR0 = OFF
+    CONFIG EBTR1 = OFF
+    CONFIG EBTR2 = OFF
+    CONFIG EBTR3 = OFF
+    CONFIG EBTRB = OFF
+
+
+
+; Variables
+DELAY_COUNT1 EQU 0x021
+DELAY_COUNT2 EQU 0x022
+DELAY_COUNT3 EQU 0x023
+DELAY_COUNT4 EQU 0x024
+
+
 
 
     ORG     0
