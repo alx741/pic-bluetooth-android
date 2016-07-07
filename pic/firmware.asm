@@ -17,7 +17,7 @@
 #include p18f4550.inc
 list p=18f4550
 
-    ; Fuses setting
+    ; Fuses settings
     CONFIG PLLDIV = 1
     CONFIG CPUDIV = OSC1_PLL2
     CONFIG FOSC = INTOSCIO_EC
@@ -54,7 +54,8 @@ list p=18f4550
 
 
 
-; Variables
+;;;;; Variables
+; Delay
 DELAY_COUNT1 EQU 0x021
 DELAY_COUNT2 EQU 0x022
 DELAY_COUNT3 EQU 0x023
@@ -67,6 +68,7 @@ DELAY_COUNT4 EQU 0x024
 
 INIT
     ; Init internal oscillator
+    ; 4MHz
     call    BANK15
     movlw   B'11101101'
     movwf   OSCCON
@@ -78,16 +80,33 @@ INIT
     movwf   DELAY_COUNT3
     movwf   DELAY_COUNT4
 
-    ; Init TRISB
+    ; Init TRISB as ouput
     movlw   B'0000000'
     movwf   TRISB
     movwf   PORTB
+
+    ; Init UART
+    ; Asynchornous, 8 bits, high speed
+    ; 9.6Kbd
+    bsf     RCSTA, SPEN
+    bsf     TRISC, TRISC6
+    bsf     TRISC, TRISC7
+    movlw   .25
+    movwf   SPBRG
+    movlw   B'00100110'
+    movwf   TXSTA
+    movlw   B'10010000'
+    movwf   RCSTA
+    movlw   B'00000000'
+    movwf   BAUDCON
 
 
 
 MAIN
     call    BANK15
     comf    PORTB,1
+    movlw   'a'
+    movwf   TXREG
     call    DELAY
     goto    MAIN
     goto    DIE
