@@ -104,7 +104,7 @@ INIT
     ; Channel 0 (AN0)
     movlw   B'00000001'
     movwf   ADCON0
-    movlw   B'00001110'
+    movlw   B'00001101'
     movwf   ADCON1
     movlw   B'00010100'
     movwf   ADCON2
@@ -115,10 +115,13 @@ MAIN
     call    BANK15
     movlw   'a'
     movwf   TXREG
-    call    GET_UART_DATA
-    call    DELAY
+    comf    PORTB,1
+    call    ADC_CONVERT
+    movff   ADRESL, TXREG
+    call    WAIT_UART_TRANSMISSION
+    movff   ADRESH, TXREG
+    ; call    GET_UART_DATA
     goto    MAIN
-    ; goto    DIE
 
 GET_UART_DATA
     btfss   PIR1, RCIF
@@ -129,6 +132,19 @@ GET_UART_DATA
     return
     comf    PORTB,1
     clrf    RCREG
+    return
+
+WAIT_UART_TRANSMISSION
+    btfss   TXSTA, TRMT
+    goto WAIT_UART_TRANSMISSION
+    return
+
+ADC_CONVERT
+    call    DELAY
+    bsf     ADCON0, GO_DONE
+adc_wait
+    btfsc   ADCON0, GO_DONE
+    goto    adc_wait
     return
 
 
