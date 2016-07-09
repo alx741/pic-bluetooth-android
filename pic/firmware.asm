@@ -61,6 +61,19 @@ DELAY_COUNT2 EQU 0x022
 DELAY_COUNT3 EQU 0x023
 DELAY_COUNT4 EQU 0x024
 
+; ADC result
+ADCH EQU 0x025
+ADCL EQU 0x026
+
+; ADC modes
+ADCMODE_A_ADCON0 EQU B'00000001'
+ADCMODE_A_ADCON2 EQU B'00010100'
+ADCMODE_B_ADCON0 EQU B'00000001'
+ADCMODE_B_ADCON2 EQU B'00010101'
+ADCMODE_C_ADCON0 EQU B'00000101'
+ADCMODE_C_ADCON2 EQU B'00010100'
+ADCMODE_D_ADCON0 EQU B'00000101'
+ADCMODE_D_ADCON2 EQU B'00010101'
 
 
 
@@ -101,12 +114,12 @@ INIT
     movwf   BAUDCON
 
     ; Init ADC
-    ; Channel 0 (AN0)
-    movlw   B'00000001'
+    ; MODE A
+    movlw   ADCMODE_A_ADCON0
     movwf   ADCON0
     movlw   B'00001101'
     movwf   ADCON1
-    movlw   B'00010100'
+    movlw   ADCMODE_A_ADCON2
     movwf   ADCON2
 
 
@@ -118,11 +131,11 @@ MAIN
 
     ; Convert and send results
     call    ADC_CONVERT
-    movff   ADRESL, TXREG
+    movff   ADCH, TXREG
     call    WAIT_UART_TRANSMISSION
-    movff   ADRESH, TXREG
+    movff   ADCL, TXREG
 
-    comf    PORTB,1
+    movff   ADCH, PORTB
     goto    MAIN
 
 
@@ -137,19 +150,64 @@ GET_UART_DATA
     clrf    RCREG
     return
 
+; CONFIGURE_ADC
+;     movff   RCREG, ADCON0
+;     clrf    RCREG
+;     bcf     PIR1, RCIF
+; wait_second_byte
+;     btfss   PIR1, RCIF
+;     goto    wait_second_byte
+;     movff   RCREG, ADCON2
+;     clrf    RCREG
+;     bcf     PIR1, RCIF
+;     ; Send confirmation byte
+;     movlw   '.'
+;     movwf   TXREG
+;     return
+
 CONFIGURE_ADC
-    movff   RCREG, ADCON0
+    movlw   'a'
+    cpfsgt  RCREG
+    goto    adc_mode_a
+
+    movlw   'b'
+    cpfsgt  RCREG
+    goto    adc_mode_b
+
+    movlw   'c'
+    cpfsgt  RCREG
+    goto    adc_mode_c
+
+    movlw   'd'
+    cpfsgt  RCREG
+    goto    adc_mode_d
+adc_mode_a
+    movlw   ADCMODE_A_ADCON0
+    movwf   ADCON0
+    movlw   ADCMODE_A_ADCON2
+    movwf   ADCON2
+    goto    adc_clean
+adc_mode_b
+    movlw   ADCMODE_B_ADCON0
+    movwf   ADCON0
+    movlw   ADCMODE_B_ADCON2
+    movwf   ADCON2
+    goto    adc_clean
+adc_mode_c
+    movlw   ADCMODE_C_ADCON0
+    movwf   ADCON0
+    movlw   ADCMODE_C_ADCON2
+    movwf   ADCON2
+    goto    adc_clean
+adc_mode_d
+    movlw   ADCMODE_D_ADCON0
+    movwf   ADCON0
+    movlw   ADCMODE_D_ADCON2
+    movwf   ADCON2
+    goto    adc_clean
+adc_clean
     clrf    RCREG
     bcf     PIR1, RCIF
-wait_second_byte
-    btfss   PIR1, RCIF
-    goto    wait_second_byte
-    movff   RCREG, ADCON2
-    clrf    RCREG
-    bcf     PIR1, RCIF
-    ; Send confirmation byte
-    movlw   '.'
-    movwf   TXREG
     return
 
 WAIT_UART_TRANSMISSION
@@ -163,6 +221,8 @@ ADC_CONVERT
 adc_wait
     btfsc   ADCON0, GO_DONE
     goto    adc_wait
+    movff   ADRESH, ADCH
+    movff   ADRESL, ADCL
     return
 
 
