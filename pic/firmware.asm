@@ -112,16 +112,19 @@ INIT
 
 
 MAIN
-    call    BANK15
-    movlw   'a'
-    movwf   TXREG
-    comf    PORTB,1
+    ; Check for new incomming configuration
+    btfsc   PIR1, RCIF
+    call    CONFIGURE_ADC
+
+    ; Convert and send results
     call    ADC_CONVERT
     movff   ADRESL, TXREG
     call    WAIT_UART_TRANSMISSION
     movff   ADRESH, TXREG
-    ; call    GET_UART_DATA
+
+    comf    PORTB,1
     goto    MAIN
+
 
 GET_UART_DATA
     btfss   PIR1, RCIF
@@ -132,6 +135,21 @@ GET_UART_DATA
     return
     comf    PORTB,1
     clrf    RCREG
+    return
+
+CONFIGURE_ADC
+    movff   RCREG, ADCON0
+    clrf    RCREG
+    bcf     PIR1, RCIF
+wait_second_byte
+    btfss   PIR1, RCIF
+    goto    wait_second_byte
+    movff   RCREG, ADCON2
+    clrf    RCREG
+    bcf     PIR1, RCIF
+    ; Send confirmation byte
+    movlw   '.'
+    movwf   TXREG
     return
 
 WAIT_UART_TRANSMISSION
